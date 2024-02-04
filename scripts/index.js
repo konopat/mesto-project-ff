@@ -29,15 +29,8 @@ const isValid = (cardData) => {
 
 // Валидация карточки
 const isCard = (card) => {
-  const cardProperties = Array.from(card.children)
-  const cardImgNode = cardProperties[0].nodeName
-  const cardButtonNode = cardProperties[1].nodeName
-  const cardTitleNode = cardProperties[2].firstElementChild.nodeName
-  if (
-    cardImgNode === 'IMG' &&
-    cardButtonNode === 'BUTTON' &&
-    cardTitleNode === 'H2'
-  ) {
+  // Вернет true, если card элемент с соответствующим классом
+  if (card.className.includes('card')) {
     return true
   }
   return false
@@ -80,7 +73,9 @@ const createCard = (cardData, deleteCardFunction) => {
     const deleteButton = cardElement.querySelector('.card__delete-button')
     // Наполняем элемент
     cardImage.src = cardData.link // Изображение
+    cardImage.alt = cardData.name // Alt изображения
     cardTitle.textContent = cardData.name // Название
+
     // Вешаем слушатель на кнопку удаления
     deleteButton.addEventListener(
       'click',
