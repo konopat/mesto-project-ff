@@ -1,5 +1,38 @@
-const mainContent = document.querySelector('.content')
-const cardList = mainContent.querySelector('.places__list')
+const page = document.querySelector('.page')
+const content = page.querySelector('.content')
+const cardList = content.querySelector('.places__list')
+// Шаблон карточки
+const cardTemplate = page.querySelector('#card-template').content
+
+// Данные для карточек по умолчанию
+const initialCards = [
+  {
+    name: 'Архыз',
+    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg',
+  },
+  {
+    name: 'Челябинская область',
+    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg',
+  },
+  {
+    name: 'Иваново',
+    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg',
+  },
+  {
+    name: 'Камчатка',
+    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg',
+  },
+  {
+    name: 'Холмогорский район',
+    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg',
+  },
+  {
+    name: 'Байкал',
+    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg',
+  },
+]
+
+// -- ВАЛИДАЦИЯ
 
 // Валидация данных для создания карточки
 const isValid = (cardData) => {
@@ -36,6 +69,8 @@ const isCard = (card) => {
   return false
 }
 
+// -- МАНИПУЛЯЦИИ С КАРТОЧКАМИ
+
 // Добавление карточки
 const addCard = (card) => {
   if (isCard(card)) {
@@ -64,18 +99,15 @@ const removeCard = (card) => {
 const createCard = (cardData, deleteCardFunction) => {
   // Валидируем входящие данные
   if (isValid(cardData)) {
-    // Обращаемся к шаблону
-    const cardTemplate = document.querySelector('#card-template').content
-    // Клонируем структуру элемента
+    // Клонируем структуру элемента из шаблона
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true)
     const cardImage = cardElement.querySelector('.card__image')
     const cardTitle = cardElement.querySelector('.card__title')
-    const deleteButton = cardElement.querySelector('.card__delete-button')
     // Наполняем элемент
     cardImage.src = cardData.link // Изображение
     cardImage.alt = cardData.name // Alt изображения
     cardTitle.textContent = cardData.name // Название
-
+    const deleteButton = cardElement.querySelector('.card__delete-button')
     // Вешаем слушатель на кнопку удаления
     deleteButton.addEventListener(
       'click',
@@ -89,7 +121,9 @@ const createCard = (cardData, deleteCardFunction) => {
 }
 
 // Карточки, которые выводятся по умолчанию
-initialCards.forEach((item) => {
-  const card = createCard(item, removeCard)
-  addCard(card)
-})
+export const createInitialCards = () => {
+  initialCards.forEach((item) => {
+    const card = createCard(item, removeCard)
+    addCard(card)
+  })
+}
