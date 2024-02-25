@@ -1,36 +1,4 @@
-const page = document.querySelector('.page')
-const content = page.querySelector('.content')
-const cardList = content.querySelector('.places__list')
-// Шаблон карточки
-const cardTemplate = page.querySelector('#card-template').content
-
-// Данные для карточек по умолчанию
-const initialCards = [
-  {
-    name: 'Архыз',
-    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/arkhyz.jpg',
-  },
-  {
-    name: 'Челябинская область',
-    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/chelyabinsk-oblast.jpg',
-  },
-  {
-    name: 'Иваново',
-    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/ivanovo.jpg',
-  },
-  {
-    name: 'Камчатка',
-    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kamchatka.jpg',
-  },
-  {
-    name: 'Холмогорский район',
-    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/kholmogorsky-rayon.jpg',
-  },
-  {
-    name: 'Байкал',
-    link: 'https://pictures.s3.yandex.net/frontend-developer/cards-compressed/baikal.jpg',
-  },
-]
+import { openPopUp } from './modal'
 
 // -- ВАЛИДАЦИЯ
 
@@ -72,9 +40,10 @@ const isCard = (card) => {
 // -- МАНИПУЛЯЦИИ С КАРТОЧКАМИ
 
 // Добавление карточки
-const addCard = (card) => {
+const addCard = (card, cardList) => {
   if (isCard(card)) {
-    cardList.append(card)
+    // Добавляем новую карточку в начало списка
+    cardList.prepend(card)
   } else {
     console.error(
       'Не удалось добавить карточку, данные не прошли валидацию:',
@@ -95,24 +64,52 @@ const removeCard = (card) => {
   }
 }
 
+// Лайк
+const likeTheCard = (likeButton) => {
+  likeButton.classList.toggle('card__like-button_is-active')
+}
+
 // Создание карточки
-const createCard = (cardData, deleteCardFunction) => {
+const createCard = (
+  cardData,
+  cardTemplate,
+  deleteCardFunction,
+  openPopUpFunction,
+  popUpTemplate,
+  likeTheCardFunction
+) => {
   // Валидируем входящие данные
   if (isValid(cardData)) {
     // Клонируем структуру элемента из шаблона
     const cardElement = cardTemplate.querySelector('.card').cloneNode(true)
     const cardImage = cardElement.querySelector('.card__image')
     const cardTitle = cardElement.querySelector('.card__title')
+    const deleteButton = cardElement.querySelector('.card__delete-button')
+    const cardLikeButton = cardElement.querySelector('.card__like-button')
+
     // Наполняем элемент
     cardImage.src = cardData.link // Изображение
     cardImage.alt = cardData.name // Alt изображения
     cardTitle.textContent = cardData.name // Название
-    const deleteButton = cardElement.querySelector('.card__delete-button')
+
     // Вешаем слушатель на кнопку удаления
     deleteButton.addEventListener(
       'click',
       () => deleteCardFunction(cardElement) // Удаляем карточку
     )
+
+    // Вешаем слушатель на изображение
+    cardImage.addEventListener('click', () => {
+      openPopUpFunction(popUpTemplate, 'popup_is-opened')
+      popUpTemplate.querySelector('.popup__image').src = cardImage.src
+      popUpTemplate.querySelector('.popup__caption').textContent = cardImage.alt
+    })
+
+    // Вешаем слушатель на лайк
+    cardLikeButton.addEventListener('click', () => {
+      likeTheCardFunction(cardLikeButton)
+    })
+
     // Добавляем элемент в DOM
     return cardElement
   } else {
@@ -120,10 +117,20 @@ const createCard = (cardData, deleteCardFunction) => {
   }
 }
 
-// Карточки, которые выводятся по умолчанию
-export const createInitialCards = () => {
-  initialCards.forEach((item) => {
-    const card = createCard(item, removeCard)
-    addCard(card)
+// Рендеринг карточек
+export const renderCards = (cards, list, template, popUpTemplate) => {
+  // Перебираем карточки в обратном порядке
+  cards.reverse().forEach((item) => {
+    // Создаем новую карточку
+    const card = createCard(
+      item,
+      template,
+      removeCard,
+      openPopUp,
+      popUpTemplate,
+      likeTheCard
+    )
+    // Добавляем карточку на страницу
+    addCard(card, list)
   })
 }
