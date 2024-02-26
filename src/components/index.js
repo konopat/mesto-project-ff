@@ -1,115 +1,120 @@
 import '../pages/index.css' // Стили
-import { initialCards } from './cards' // Массив карточек по умолчанию
-import { renderCards } from './card'
+import { initialCards } from './cards'
+import { createCard, deleteCard, likeCard } from './card'
 import { openPopUp, closePopUp } from './modal'
 
-// -- СЛУЖЕБНЫЕ КЛАССЫ
-const pageClass = 'page'
-// Классы карточек
-const cardListClass = 'places__list'
-// Классы попапов
-const popUpClass = 'popup'
-const popUpIsOpenedClass = 'popup_is-opened'
-const popUpIsAnimatedClass = 'popup_is-animated'
-const popUpCloseButtonClass = 'popup__close'
-const popUpProfileEditorClass = 'popup_type_edit'
-const popupNewCardFormClass = 'popup_type_new-card'
-const imagePopUpTemplateClass = 'popup_type_image'
-// Классы профиля
-const profileTitleClass = 'profile__title'
-const profileDescriptionClass = 'profile__description'
-const profileEditButtonClass = 'profile__edit-button'
-const profileAddButtonClass = 'profile__add-button'
-
-// -- DOM-ЭЛЕМЕНТЫ
-const page = document.querySelector('.' + pageClass)
+// DOM - элементы
+const page = document.querySelector('.page')
 // Карточки
-const cardList = page.querySelector('.' + cardListClass)
+const cardList = page.querySelector('.places__list')
 const cardTemplate = page.querySelector('#card-template').content
-// Профиль
-const profileTitle = page.querySelector('.' + profileTitleClass)
-const profileDescription = page.querySelector('.' + profileDescriptionClass)
-const profileEditButton = page.querySelector('.' + profileEditButtonClass)
-const profileAddButton = page.querySelector('.' + profileAddButtonClass)
-// Попапы
-const popupProfileEditor = page.querySelector('.' + popUpProfileEditorClass)
-const popupNewCardForm = page.querySelector('.' + popupNewCardFormClass)
-const popUps = page.querySelectorAll('.' + popUpClass)
-const imagePopUpTemplate = page.querySelector('.' + imagePopUpTemplateClass)
+// Модальные окна
+const popUps = page.querySelectorAll('.popup')
+const popUpEditProfile = page.querySelector('.popup_type_edit')
+const popUpAddCard = page.querySelector('.popup_type_new-card')
+const popUpImage = page.querySelector('.popup_type_image')
+const buttonsClosePopUp = page.querySelectorAll('.popup__close')
+const buttonOpenPopUpEditProfile = page.querySelector('.profile__edit-button')
+const buttonOpenPopUpAddCard = page.querySelector('.profile__add-button')
 // Формы
-const editProfileForm = document.forms['edit-profile']
-const newCardForm = document.forms['new-place']
-const newCardFormInputPlaceName = newCardForm['place-name']
-const newCardFormInputLink = newCardForm.link
+const formEditProfile = document.forms['edit-profile']
+const formAddCard = document.forms['new-place']
+// Профиль
+const titleProfile = page.querySelector('.profile__title')
+const descriptionProfile = page.querySelector('.profile__description')
 
 // -- ОБРАБОТЧИКИ
-// Сабмит формы редактирования профиля
-const editProfileFormSubmitHandle = (evt) => {
-  evt.preventDefault() // Отменяет стандартную отправку формы.
-  profileTitle.textContent = editProfileForm.name.value
-  profileDescription.textContent = editProfileForm.description.value
-  const currentPopUp = getCurrentPopUp(evt) // Текущий попап
-  closePopUp(currentPopUp, popUpIsOpenedClass) // Закрывает попап
+// Открыть изображение карточки в модальном окне
+const openImagePopUp = (image) => {
+  const img = popUpImage.querySelector('.popup__image')
+  const caption = popUpImage.querySelector('.popup__caption')
+  img.src = image.src
+  img.alt = image.alt
+  caption.textContent = image.alt
+  openPopUp(popUpImage)
 }
 
-// Сабмит формы добавления новой карточки
-const newCardFormSubmitHandle = (evt) => {
+// Засабмитить форму редактирования профиля
+const submitFormEditProfile = (evt) => {
   evt.preventDefault() // Отменяет стандартную отправку формы.
-  // Создаем массив с объектом новой карточки, чтобы использовать единую функцию рендеринга
-  const newcard = [
-    {
-      name: newCardFormInputPlaceName.value,
-      link: newCardFormInputLink.value,
-    },
-  ]
-  // Дорисовываем новую карточку
-  renderCards(newcard, cardList, cardTemplate, imagePopUpTemplate)
-  const currentPopUp = getCurrentPopUp(evt) // Получаем текущий попап
-  closePopUp(currentPopUp, popUpIsOpenedClass) // Закрываем текущий попап
-  newCardForm.reset() // Сбрасываем поля формы
+  titleProfile.textContent = formEditProfile.name.value
+  descriptionProfile.textContent = formEditProfile.description.value
+  const popUp = evt.target.closest('.popup')
+  closePopUp(popUp) // Закрывает попап
 }
 
-// -- СЛУШАТЕЛИ
-// Ждет всплывающее событие: нажатие по кнопке закрытия попапа
-page.addEventListener('click', (evt) => {
-  if (evt.target.classList.contains(popUpCloseButtonClass)) {
-    const currentPopUp = getCurrentPopUp(evt) // Получаем текущий попап
-    closePopUp(currentPopUp, popUpIsOpenedClass) // // Закрываем текущий попап
+// Засабмитить форму добавления новой карточки
+const submitFormAddCard = (evt) => {
+  evt.preventDefault() // Отменяем стандартную отправку формы.
+  // Готовим данные для создания карточки
+  const data = {
+    name: formAddCard['place-name'].value,
+    link: formAddCard.link.value,
   }
-})
+  // Создаем карточку
+  const card = createCard(
+    data,
+    cardTemplate,
+    deleteCard,
+    likeCard,
+    openImagePopUp
+  )
+  addCard(card) // Добавляем карточку в DOM
+  // Закрываем текущий попап
+  const popUp = evt.target.closest('.popup')
+  closePopUp(popUp)
+  formAddCard.reset() // Сбрасываем поля формы
+}
 
-// Ждет клик по кнопке "редактировать профиль"
-profileEditButton.addEventListener('click', () =>
-  openPopUp(popupProfileEditor, popUpIsOpenedClass)
-)
+// Добавить карточку
+const addCard = (card) => {
+  cardList.prepend(card)
+}
 
-// Ждет клик по кнопке "+"
-profileAddButton.addEventListener('click', () =>
-  openPopUp(popupNewCardForm, popUpIsOpenedClass)
-)
+// Вывести на страницу карточки по умолчанию
+const renderDefaultCards = (dataSet) => {
+  dataSet.reverse().forEach((data) => {
+    const card = createCard(
+      data,
+      cardTemplate,
+      deleteCard,
+      likeCard,
+      openImagePopUp
+    )
+    addCard(card)
+  })
+}
 
-// Ждет сабмит формы редактирования профиля
-editProfileForm.addEventListener('submit', editProfileFormSubmitHandle)
-
-// Ждет сабмит формы добавления новой карточки
-newCardForm.addEventListener('submit', newCardFormSubmitHandle)
-
-// -- РЕНДЕРИНГ
+// Рендеринг
 // Добавляем всем попапам плавные анимации
 popUps.forEach((popUp) => {
-  popUp.classList.add(popUpIsAnimatedClass)
+  popUp.classList.add('popup_is-animated')
 })
 
-// Формы
-// Добавляем начальные значения инпутам формы редактирования профиля
-editProfileForm.name.value = profileTitle.textContent
-editProfileForm.description.value = profileDescription.textContent
+// Добавляем слушатели на кнопки закрытия попапов
+buttonsClosePopUp.forEach((button) => {
+  button.addEventListener('click', (evt) => {
+    const popUp = evt.target.closest('.popup')
+    closePopUp(popUp)
+  })
+})
 
-// Карточки
-// Выводим начальные карточки на экран
-renderCards(initialCards, cardList, cardTemplate, imagePopUpTemplate)
+// Отрисовываем карточки по умолчанию
+renderDefaultCards(initialCards)
 
-// -- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-const getCurrentPopUp = (evt) => {
-  return evt.target.closest('.' + popUpClass)
-}
+// Слушатели
+// Ждет клик по кнопке "редактировать профиль"
+buttonOpenPopUpEditProfile.addEventListener('click', () => {
+  formEditProfile.name.value = titleProfile.textContent
+  formEditProfile.description.value = descriptionProfile.textContent
+  openPopUp(popUpEditProfile)
+})
+
+// Ждет сабмит формы редактирования профиля
+formEditProfile.addEventListener('submit', submitFormEditProfile)
+
+// Ждет клик по кнопке "+"
+buttonOpenPopUpAddCard.addEventListener('click', () => openPopUp(popUpAddCard))
+
+// Ждет сабмит формы добавления новой карточки
+formAddCard.addEventListener('submit', submitFormAddCard)

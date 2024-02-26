@@ -1,44 +1,36 @@
-// Класс, который отвечает за открытие попапа
-// Изменяется на актуальный при открытии попапа
-let currentClassForOpeningPopUp = 'default_class_for_opening_popup'
-
-// Открыть попап
-export const openPopUp = (popUp, classForOpening) => {
-  // Актуализируем класс, который отвечает за открытие попапа
-  currentClassForOpeningPopUp = classForOpening
-  // Открываем попап
-  popUp.classList.add(classForOpening)
+// Открыть модальное окно
+export const openPopUp = (popUp) => {
+  popUp.classList.add('popup_is-opened')
   // Вешаем временные слушатели
   addTemporaryListeners()
 }
 
-// Закрыть попап
-export const closePopUp = (popUp, classForToggle) => {
-  // Закрываем попап
-  popUp.classList.toggle(classForToggle)
+// Закрыть модальное окно
+export const closePopUp = (popUp) => {
+  popUp.classList.toggle('popup_is-opened')
   // Снимаем временные слушатели
   removeTemporaryListeners()
 }
 
-// Обработчик клавиши Esc
+// Функция-обработчик события нажатия Esc
 const escapeKeydownHandler = (evt) => {
   if (evt.key === 'Escape') {
     const openedPopUp = findOpenedPopUp()
-    closePopUp(openedPopUp, currentClassForOpeningPopUp)
+    closePopUp(openedPopUp)
   }
 }
 
-// Обработчик клика по overlay
+// Функция-обработчик события клика по оверлею
 const overlayClickHandler = (evt) => {
-  if (evt.target.classList.contains(currentClassForOpeningPopUp)) {
+  if (evt.target.classList.contains('popup_is-opened')) {
     const openedPopUp = findOpenedPopUp()
-    closePopUp(openedPopUp, currentClassForOpeningPopUp)
+    closePopUp(openedPopUp)
   }
 }
 
 // Найти открытый попап
 const findOpenedPopUp = () => {
-  return document.querySelector('.' + currentClassForOpeningPopUp)
+  return document.querySelector('.popup_is-opened')
 }
 
 // Добавить временные слушатели
