@@ -13,6 +13,8 @@ const popUps = page.querySelectorAll('.popup')
 const popUpEditProfile = page.querySelector('.popup_type_edit')
 const popUpAddCard = page.querySelector('.popup_type_new-card')
 const popUpImage = page.querySelector('.popup_type_image')
+const imgInsidePopUp = popUpImage.querySelector('.popup__image')
+const captionInsidePopUp = popUpImage.querySelector('.popup__caption')
 const buttonsClosePopUp = page.querySelectorAll('.popup__close')
 const buttonOpenPopUpEditProfile = page.querySelector('.profile__edit-button')
 const buttonOpenPopUpAddCard = page.querySelector('.profile__add-button')
@@ -26,21 +28,18 @@ const descriptionProfile = page.querySelector('.profile__description')
 // -- ОБРАБОТЧИКИ
 // Открыть изображение карточки в модальном окне
 const openImagePopUp = (image) => {
-  const img = popUpImage.querySelector('.popup__image')
-  const caption = popUpImage.querySelector('.popup__caption')
-  img.src = image.src
-  img.alt = image.alt
-  caption.textContent = image.alt
+  imgInsidePopUp.src = image.src
+  imgInsidePopUp.alt = image.alt
+  captionInsidePopUp.textContent = image.alt
   openPopUp(popUpImage)
 }
 
 // Засабмитить форму редактирования профиля
 const submitFormEditProfile = (evt) => {
-  evt.preventDefault() // Отменяет стандартную отправку формы.
+  evt.preventDefault() // Отменяем стандартную отправку формы.
   titleProfile.textContent = formEditProfile.name.value
   descriptionProfile.textContent = formEditProfile.description.value
-  const popUp = evt.target.closest('.popup')
-  closePopUp(popUp) // Закрывает попап
+  closePopUp(popUpEditProfile) // Закрываем попап
 }
 
 // Засабмитить форму добавления новой карточки
@@ -60,9 +59,7 @@ const submitFormAddCard = (evt) => {
     openImagePopUp
   )
   addCard(card) // Добавляем карточку в DOM
-  // Закрываем текущий попап
-  const popUp = evt.target.closest('.popup')
-  closePopUp(popUp)
+  closePopUp(popUpAddCard) // Закрываем попап
   formAddCard.reset() // Сбрасываем поля формы
 }
 
@@ -85,7 +82,7 @@ const renderDefaultCards = (dataSet) => {
   })
 }
 
-// Рендеринг
+// -- РЕНДЕРИНГ
 // Добавляем всем попапам плавные анимации
 popUps.forEach((popUp) => {
   popUp.classList.add('popup_is-animated')
@@ -102,7 +99,7 @@ buttonsClosePopUp.forEach((button) => {
 // Отрисовываем карточки по умолчанию
 renderDefaultCards(initialCards)
 
-// Слушатели
+// -- СЛУШАТЕЛИ
 // Ждет клик по кнопке "редактировать профиль"
 buttonOpenPopUpEditProfile.addEventListener('click', () => {
   formEditProfile.name.value = titleProfile.textContent
