@@ -2,6 +2,16 @@ import '../pages/index.css' // Стили
 import { initialCards } from './cards'
 import { createCard, deleteCard, likeCard } from './card'
 import { openPopUp, closePopUp } from './modal'
+import { enableValidation, clearValidation } from './validation'
+
+const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible',
+}
 
 // DOM - элементы
 const page = document.querySelector('.page')
@@ -61,6 +71,12 @@ const submitFormAddCard = (evt) => {
   addCard(card) // Добавляем карточку в DOM
   closePopUp(popUpAddCard) // Закрываем попап
   formAddCard.reset() // Сбрасываем поля формы
+  // Отключаем кнопку отправки формы
+  const buttonElement = formAddCard.querySelector(
+    validationConfig.submitButtonSelector
+  )
+  buttonElement.classList.add(validationConfig.inactiveButtonClass)
+  buttonElement.disabled = true
 }
 
 // Добавить карточку
@@ -99,9 +115,13 @@ buttonsClosePopUp.forEach((button) => {
 // Отрисовываем карточки по умолчанию
 renderDefaultCards(initialCards)
 
+// Активируем валидацию форм
+enableValidation(validationConfig)
+
 // -- СЛУШАТЕЛИ
 // Ждет клик по кнопке "редактировать профиль"
 buttonOpenPopUpEditProfile.addEventListener('click', () => {
+  clearValidation(formEditProfile, validationConfig)
   formEditProfile.name.value = titleProfile.textContent
   formEditProfile.description.value = descriptionProfile.textContent
   openPopUp(popUpEditProfile)
