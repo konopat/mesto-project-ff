@@ -87,10 +87,18 @@ export const enableValidation = (validationConfig) => {
 }
 
 export const clearValidation = (formElement, validationConfig) => {
+  // Достаем все инпуты в массив
   const inputList = Array.from(
     formElement.querySelectorAll(validationConfig.inputSelector)
   )
+  // Чистим каждый инпут от старых ошибок
   inputList.forEach((inputElement) => {
     hideInputError(formElement, inputElement, validationConfig)
   })
+  // Отключаем кнопку отправки формы
+  const buttonElement = formElement.querySelector(
+    validationConfig.submitButtonSelector
+  )
+  buttonElement.classList.add(validationConfig.inactiveButtonClass)
+  buttonElement.disabled = true
 }

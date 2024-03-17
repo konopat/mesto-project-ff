@@ -71,12 +71,7 @@ const submitFormAddCard = (evt) => {
   addCard(card) // Добавляем карточку в DOM
   closePopUp(popUpAddCard) // Закрываем попап
   formAddCard.reset() // Сбрасываем поля формы
-  // Отключаем кнопку отправки формы
-  const buttonElement = formAddCard.querySelector(
-    validationConfig.submitButtonSelector
-  )
-  buttonElement.classList.add(validationConfig.inactiveButtonClass)
-  buttonElement.disabled = true
+  clearValidation(formAddCard, validationConfig) // Отключаем сабмит
 }
 
 // Добавить карточку
