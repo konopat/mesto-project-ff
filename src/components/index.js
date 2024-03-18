@@ -1,9 +1,15 @@
 import '../pages/index.css' // Стили
-import { initialCards } from './cards'
 import { createCard, deleteCard, likeCard } from './card'
 import { openPopUp, closePopUp } from './modal'
 import { enableValidation, clearValidation } from './validation'
 import { validationConfig } from './validation.config'
+import {
+  addCard as pushCardOnServer,
+  editProfile,
+  getCards,
+  getUser,
+} from './api'
+import { apiConfig } from './api.config'
 
 // DOM - элементы
 const page = document.querySelector('.page')
@@ -26,6 +32,7 @@ const formAddCard = document.forms['new-place']
 // Профиль
 const titleProfile = page.querySelector('.profile__title')
 const descriptionProfile = page.querySelector('.profile__description')
+const avatar = page.querySelector('.profile__image')
 
 // -- ОБРАБОТЧИКИ
 // Открыть изображение карточки в модальном окне
@@ -39,8 +46,19 @@ const openImagePopUp = (image) => {
 // Засабмитить форму редактирования профиля
 const submitFormEditProfile = (evt) => {
   evt.preventDefault() // Отменяем стандартную отправку формы.
-  titleProfile.textContent = formEditProfile.name.value
-  descriptionProfile.textContent = formEditProfile.description.value
+  // Запрашиваем текущего пользователя
+  getUser(apiConfig).then((user) => {
+    // Меняем данные текущего пользователя
+    user.name = formEditProfile.name.value
+    user.about = formEditProfile.description.value
+    // Отправляем запрос на сервер
+    editProfile(apiConfig, user)
+      // Если удачно, отрисовывем изменения в DOM
+      .then((user) => {
+        titleProfile.textContent = user.name
+        descriptionProfile.textContent = user.about
+      })
+  })
   closePopUp(popUpEditProfile) // Закрываем попап
 }
 
@@ -52,15 +70,26 @@ const submitFormAddCard = (evt) => {
     name: formAddCard['place-name'].value,
     link: formAddCard.link.value,
   }
-  // Создаем карточку
-  const card = createCard(
-    data,
-    cardTemplate,
-    deleteCard,
-    likeCard,
-    openImagePopUp
-  )
-  addCard(card) // Добавляем карточку в DOM
+  // Запрашиваем текущего пользователя
+  getUser(apiConfig)
+    // Если пользователь идентифицирован
+    .then((user) => {
+      // Отправляем данные на сервер
+      pushCardOnServer(apiConfig, data)
+        // Если сервер вернул созданную карточку
+        .then((card) => {
+          // Создаем карточку как элемент DOM
+          const elementCard = createCard(
+            card,
+            cardTemplate,
+            deleteCard,
+            likeCard,
+            openImagePopUp,
+            user
+          )
+          addCard(elementCard) // Добавляем карточку в DOM
+        })
+    })
   closePopUp(popUpAddCard) // Закрываем попап
   formAddCard.reset() // Сбрасываем поля формы
   clearValidation(formAddCard, validationConfig) // Отключаем сабмит
@@ -71,18 +100,45 @@ const addCard = (card) => {
   cardList.prepend(card)
 }
 
-// Вывести на страницу карточки по умолчанию
-const renderDefaultCards = (dataSet) => {
-  dataSet.reverse().forEach((data) => {
+// Вывести карточки на страницу
+const renderCards = (dataset, currentUser) => {
+  dataset.reverse()
+  dataset.forEach((data) => {
     const card = createCard(
       data,
       cardTemplate,
       deleteCard,
       likeCard,
-      openImagePopUp
+      openImagePopUp,
+      currentUser
     )
     addCard(card)
   })
+}
+
+// Вывести на страницу актуальные карточки, полученные с сервера
+const renderActualCards = (config) => {
+  // Запрашиваем пользователя и карточки одновременно
+  Promise.all([getUser(config), getCards(config)]).then((res) => {
+    const user = res[0]
+    // Если удалось идентифицировать пользователя
+    if (user.name != config.anon.name) {
+      // Отрисовываем карточки
+      const cards = res[1]
+      renderCards(cards, user)
+    } // Если нет, то список карточек будет пустым, а вместо пользователя будет отображаться аноним
+  })
+}
+
+// Отрисовать профиль
+const renderProfile = (apiConfig) => {
+  getUser(apiConfig)
+    // Если получили пользователя
+    .then((user) => {
+      titleProfile.textContent = user.name
+      descriptionProfile.textContent = user.about
+      avatar.style.backgroundImage = 'url(' + user.avatar + ')'
+    })
 }
 
 // -- РЕНДЕРИНГ
@@ -99,8 +155,11 @@ buttonsClosePopUp.forEach((button) => {
   })
 })
 
-// Отрисовываем карточки по умолчанию
-renderDefaultCards(initialCards)
+// Отрисовываем карточки
+renderActualCards(apiConfig)
+
+// Отрисовываем данные профиля
+renderProfile(apiConfig)
 
 // Активируем валидацию форм
 enableValidation(validationConfig)

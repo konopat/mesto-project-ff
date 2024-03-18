@@ -136,13 +136,14 @@ export const clearValidation = (formElement, validationConfig) => {
   const inputList = Array.from(
     formElement.querySelectorAll(validationConfig.inputSelector)
   )
+  // Достаем кнопку отправки формы
+  const buttonElement = formElement.querySelector(
+    validationConfig.submitButtonSelector
+  )
   // Чистим каждый инпут от старых ошибок
   inputList.forEach((inputElement) => {
     hideInputError(formElement, inputElement, validationConfig)
   })
-  // Отключаем кнопку отправки формы
-  const buttonElement = formElement.querySelector(
-    validationConfig.submitButtonSelector
-  )
+  // Переключаем состояние кнопки отправки формы
   toggleButtonState(inputList, buttonElement, validationConfig)
 }
