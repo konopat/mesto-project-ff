@@ -3,15 +3,7 @@ import { initialCards } from './cards'
 import { createCard, deleteCard, likeCard } from './card'
 import { openPopUp, closePopUp } from './modal'
 import { enableValidation, clearValidation } from './validation'
-
-const validationConfig = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible',
-}
+import { validationConfig } from './validation.config'
 
 // DOM - элементы
 const page = document.querySelector('.page')
