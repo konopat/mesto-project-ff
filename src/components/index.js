@@ -30,10 +30,12 @@ const buttonOpenPopUpEditProfile = page.querySelector('.profile__edit-button')
 const buttonOpenPopUpAddCard = page.querySelector('.profile__add-button')
 // Формы
 const formEditProfile = document.forms['edit-profile']
+const buttonSubmitFormEditProfile =
+  formEditProfile.querySelector('.popup__button')
 const formAddCard = document.forms['new-place']
-const buttonSubmitformAddCard = formAddCard.querySelector('.popup__button')
+const buttonSubmitFormAddCard = formAddCard.querySelector('.popup__button')
 const formEditAvatar = document.forms['edit-avatar']
-const buttonSubmitformEditAvatar =
+const buttonSubmitFormEditAvatar =
   formEditAvatar.querySelector('.popup__button')
 // Профиль
 const titleProfile = page.querySelector('.profile__title')
@@ -52,20 +54,26 @@ const openImagePopUp = (image) => {
 // Засабмитить форму редактирования профиля
 const submitFormEditProfile = (evt) => {
   evt.preventDefault() // Отменяем стандартную отправку формы.
-  // Запрашиваем текущего пользователя
-  getUser(apiConfig).then((user) => {
-    // Меняем данные текущего пользователя
-    user.name = formEditProfile.name.value
-    user.about = formEditProfile.description.value
-    // Отправляем запрос на сервер
-    editProfile(apiConfig, user)
-      // Если удачно, отрисовывем изменения в DOM
-      .then((user) => {
-        titleProfile.textContent = user.name
-        descriptionProfile.textContent = user.about
-      })
-    closePopUp(popUpEditProfile) // Закрываем попап
-  })
+  buttonSubmitFormEditProfile.textContent = 'Сохранение...'
+  // Создаем объект с новыми данными пользователя
+  const user = {
+    name: formEditProfile.name.value,
+    about: formEditProfile.description.value,
+  }
+  // Отправляем запрос на сервер
+  editProfile(apiConfig, user)
+    // Если удачно, отрисовывем изменения в DOM
+    .then((user) => {
+      titleProfile.textContent = user.name
+      descriptionProfile.textContent = user.about
+    })
+    .finally(() => {
+      buttonSubmitFormEditProfile.textContent = 'Сохранить'
+      closePopUp(popUpEditProfile) // Закрываем попап
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
 // Засабмитить форму добавления новой карточки
@@ -76,32 +84,31 @@ const submitFormAddCard = (evt) => {
     name: formAddCard['place-name'].value,
     link: formAddCard.link.value,
   }
-  buttonSubmitformAddCard.textContent = 'Сохранение...'
-  // Запрашиваем текущего пользователя
-  getUser(apiConfig)
-    // Если пользователь идентифицирован
-    .then((user) => {
-      // Отправляем данные на сервер
-      pushCardOnServer(apiConfig, data)
-        // Если сервер вернул созданную карточку
-        .then((card) => {
-          // Создаем карточку как элемент DOM
-          const elementCard = createCard(
-            card,
-            cardTemplate,
-            deleteCard,
-            likeCard,
-            openImagePopUp,
-            user
-          )
-          addCard(elementCard) // Добавляем карточку в DOM
-          closePopUp(popUpAddCard) // Закрываем попап
-          buttonSubmitformAddCard.textContent = 'Сохранить'
-        })
+  buttonSubmitFormAddCard.textContent = 'Сохранение...'
+  // Отправляем данные на сервер
+  pushCardOnServer(apiConfig, data)
+    // Если сервер вернул созданную карточку
+    .then((card) => {
+      // Создаем карточку как элемент DOM
+      const elementCard = createCard(
+        card,
+        cardTemplate,
+        deleteCard,
+        likeCard,
+        openImagePopUp,
+        card.owner
+      )
+      addCard(elementCard) // Добавляем карточку в DOM
     })
-
-  formAddCard.reset() // Сбрасываем поля формы
-  clearValidation(formAddCard, validationConfig) // Отключаем сабмит
+    .finally(() => {
+      buttonSubmitFormAddCard.textContent = 'Сохранить'
+      formAddCard.reset() // Сбрасываем поля формы
+      clearValidation(formAddCard, validationConfig) // Отключаем сабмит
+      closePopUp(popUpAddCard) // Закрываем попап
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
 // Добавить карточку
@@ -128,15 +135,21 @@ const renderCards = (dataset, currentUser) => {
 // Вывести на страницу актуальные карточки, полученные с сервера
 const renderActualCards = (config) => {
   // Запрашиваем пользователя и карточки одновременно
-  Promise.all([getUser(config), getCards(config)]).then((res) => {
-    const user = res[0]
-    // Если удалось идентифицировать пользователя
-    if (user.name != config.anon.name) {
-      // Отрисовываем карточки
-      const cards = res[1]
-      renderCards(cards, user)
-    } // Если нет, то список карточек будет пустым, а вместо пользователя будет отображаться аноним
-  })
+  Promise.all([getUser(config), getCards(config)])
+    .then((res) => {
+      const user = res[0]
+      // Если удалось идентифицировать пользователя
+      if (user.name != config.anon.name) {
+        // Отрисовываем карточки
+        const cards = res[1]
+        renderCards(cards, user)
+        // Отрисовываем пользователя
+        renderProfile(user)
+      } // Если нет, то список карточек будет пустым, а вместо пользователя будет отображаться аноним
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
 // Открыть редактор аватара
@@ -147,32 +160,31 @@ const editAvatar = () => {
 // Засабмитить форму редактора аватара
 const submitFormEditAvatar = (evt) => {
   evt.preventDefault() // Отменяем стандартную отправку формы.
-  buttonSubmitformEditAvatar.textContent = 'Сохранение...'
-  // Запрашиваем текущего пользователя
-  getUser(apiConfig).then(() => {
-    // Вынимаем ссылку на новую аватарку
-    const link = formEditAvatar.link.value
-
-    // Отправляем запрос на сервер
-    changeAvatar(apiConfig, link)
-      // Если удачно, отрисовывем изменения в DOM
-      .then(() => {
-        renderProfile(apiConfig)
-        closePopUp(popUpAvatar) // Закрываем попап
-        buttonSubmitformEditAvatar.textContent = 'Сохранить'
-      })
-  })
+  buttonSubmitFormEditAvatar.textContent = 'Сохранение...'
+  // Вынимаем ссылку на новую аватарку
+  const link = formEditAvatar.link.value
+  // Отправляем запрос на сервер
+  changeAvatar(apiConfig, link)
+    // Если удачно, отрисовывем изменения в DOM
+    .then((user) => {
+      avatar.style.backgroundImage = 'url(' + user.avatar + ')'
+    })
+    .finally(() => {
+      buttonSubmitFormEditAvatar.textContent = 'Сохранить'
+      closePopUp(popUpAvatar) // Закрываем попап
+      formEditAvatar.reset() // Сбрасываем поля формы
+      clearValidation(formEditAvatar, validationConfig) // Отключаем сабмит
+    })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
 // Отрисовать профиль
-const renderProfile = (apiConfig) => {
-  getUser(apiConfig)
-    // Если получили пользователя
-    .then((user) => {
-      titleProfile.textContent = user.name
-      descriptionProfile.textContent = user.about
-      avatar.style.backgroundImage = 'url(' + user.avatar + ')'
-    })
+const renderProfile = (user) => {
+  titleProfile.textContent = user.name
+  descriptionProfile.textContent = user.about
+  avatar.style.backgroundImage = 'url(' + user.avatar + ')'
 }
 
 // -- РЕНДЕРИНГ
@@ -191,9 +203,6 @@ buttonsClosePopUp.forEach((button) => {
 
 // Отрисовываем карточки
 renderActualCards(apiConfig)
-
-// Отрисовываем данные профиля
-renderProfile(apiConfig)
 
 // Активируем валидацию форм
 enableValidation(validationConfig)

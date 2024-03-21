@@ -2,7 +2,6 @@ import noimage from '../images/noimage.jpg' // Заглушка для не за
 import {
   deleteCardFromServer,
   dislikeCardOnServer,
-  getLikes,
   likeCardOnServer,
 } from './api'
 import { apiConfig } from './api.config'
@@ -74,20 +73,31 @@ export const deleteCard = (elementCard, idCard) => {
     .then(() => {
       elementCard.remove() // Удаляем из DOM
     })
+    .catch((err) => {
+      console.error(err)
+    })
 }
 
 // Лайк карточки
 export const likeCard = (button, idCard, likeCounter) => {
   // Если карточка уже лайкнута текущим пользователем
   if (button.classList.contains('card__like-button_is-active')) {
-    dislikeCardOnServer(apiConfig, idCard).then((res) => {
-      likeCounter.textContent = res.likes.length // Отрисовываем количество лайков
-      button.classList.toggle('card__like-button_is-active') // Убираем лайк
-    })
+    dislikeCardOnServer(apiConfig, idCard)
+      .then((res) => {
+        likeCounter.textContent = res.likes.length // Отрисовываем количество лайков
+        button.classList.toggle('card__like-button_is-active') // Убираем лайк
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   } else {
-    likeCardOnServer(apiConfig, idCard).then((res) => {
-      likeCounter.textContent = res.likes.length // Отрисовываем количество лайков
-      button.classList.toggle('card__like-button_is-active') // Отрисовываем лайк на экране
-    })
+    likeCardOnServer(apiConfig, idCard)
+      .then((res) => {
+        likeCounter.textContent = res.likes.length // Отрисовываем количество лайков
+        button.classList.toggle('card__like-button_is-active') // Отрисовываем лайк на экране
+      })
+      .catch((err) => {
+        console.error(err)
+      })
   }
 }

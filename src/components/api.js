@@ -10,13 +10,6 @@ export const getUser = (config) => {
   return (
     // Запрашиваем сервер и возвращаем ответ
     fetchServer(config, request)
-      // Отлавливаем ошибки
-      .catch((err) => {
-        // Выводим ошибку в консоль
-        console.error('Ошибка запроса пользователя', err)
-        // Выводим данные анонимного пользователя, чтобы не замораживать интерфейс
-        return config.anon
-      })
   )
 }
 
@@ -31,10 +24,7 @@ export const getCards = (config) => {
   }
   return (
     // Запрашиваем сервер и возвращаем ответ
-    fetchServer(config, request).catch((err) => {
-      // Выводим ошибку в консоль
-      console.error('Ошибка запроса карточек', err)
-    })
+    fetchServer(config, request)
   )
 }
 
@@ -53,10 +43,7 @@ export const editProfile = (config, user) => {
     }),
   }
   // Запрашиваем сервер и возвращаем ответ
-  return fetchServer(config, request).catch((err) => {
-    // Выводим ошибку в консоль
-    console.error('Ошибка редактирования пользователя', err)
-  })
+  return fetchServer(config, request)
 }
 
 // Добавить новую карточку
@@ -74,10 +61,7 @@ export const addCard = (config, card) => {
     }),
   }
   // Запрашиваем сервер и возвращаем ответ
-  return fetchServer(config, request).catch((err) => {
-    // Выводим ошибку в консоль
-    console.error('Ошибка добавления новой карточки', err)
-  })
+  return fetchServer(config, request)
 }
 
 // Удалить карточку
@@ -89,10 +73,7 @@ export const deleteCardFromServer = (config, idCard) => {
       authorization: config.token,
     },
   }
-  return fetchServer(config, request).catch((err) => {
-    // Выводим ошибку в консоль
-    console.error('Ошибка удаления карточки', err)
-  })
+  return fetchServer(config, request)
 }
 
 // Лайкнуть карточку
@@ -104,10 +85,7 @@ export const likeCardOnServer = (config, idCard) => {
       authorization: config.token,
     },
   }
-  return fetchServer(config, request).catch((err) => {
-    // Выводим ошибку в консоль
-    console.error('Ошибка отправки лайка на сервер', err)
-  })
+  return fetchServer(config, request)
 }
 
 // Дизлайкнуть карточку
@@ -119,10 +97,7 @@ export const dislikeCardOnServer = (config, idCard) => {
       authorization: config.token,
     },
   }
-  return fetchServer(config, request).catch((err) => {
-    // Выводим ошибку в консоль
-    console.error('Ошибка удаления лайка на сервере', err)
-  })
+  return fetchServer(config, request)
 }
 
 // Запросить сервер
@@ -163,8 +138,5 @@ export const changeAvatar = (config, imageUrl) => {
       avatar: imageUrl,
     }),
   }
-  return fetchServer(config, request).catch((err) => {
-    // Выводим ошибку в консоль
-    console.error('Ошибка отправки лайка на сервер', err)
-  })
+  return fetchServer(config, request)
 }
