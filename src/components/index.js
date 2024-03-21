@@ -8,6 +8,7 @@ import {
   editProfile,
   getCards,
   getUser,
+  changeAvatar,
 } from './api'
 import { apiConfig } from './api.config'
 
@@ -21,6 +22,7 @@ const popUps = page.querySelectorAll('.popup')
 const popUpEditProfile = page.querySelector('.popup_type_edit')
 const popUpAddCard = page.querySelector('.popup_type_new-card')
 const popUpImage = page.querySelector('.popup_type_image')
+const popUpAvatar = page.querySelector('.popup_type_edit_avatar')
 const imgInsidePopUp = popUpImage.querySelector('.popup__image')
 const captionInsidePopUp = popUpImage.querySelector('.popup__caption')
 const buttonsClosePopUp = page.querySelectorAll('.popup__close')
@@ -29,6 +31,10 @@ const buttonOpenPopUpAddCard = page.querySelector('.profile__add-button')
 // Формы
 const formEditProfile = document.forms['edit-profile']
 const formAddCard = document.forms['new-place']
+const buttonSubmitformAddCard = formAddCard.querySelector('.popup__button')
+const formEditAvatar = document.forms['edit-avatar']
+const buttonSubmitformEditAvatar =
+  formEditAvatar.querySelector('.popup__button')
 // Профиль
 const titleProfile = page.querySelector('.profile__title')
 const descriptionProfile = page.querySelector('.profile__description')
@@ -58,8 +64,8 @@ const submitFormEditProfile = (evt) => {
         titleProfile.textContent = user.name
         descriptionProfile.textContent = user.about
       })
+    closePopUp(popUpEditProfile) // Закрываем попап
   })
-  closePopUp(popUpEditProfile) // Закрываем попап
 }
 
 // Засабмитить форму добавления новой карточки
@@ -70,6 +76,7 @@ const submitFormAddCard = (evt) => {
     name: formAddCard['place-name'].value,
     link: formAddCard.link.value,
   }
+  buttonSubmitformAddCard.textContent = 'Сохранение...'
   // Запрашиваем текущего пользователя
   getUser(apiConfig)
     // Если пользователь идентифицирован
@@ -88,9 +95,11 @@ const submitFormAddCard = (evt) => {
             user
           )
           addCard(elementCard) // Добавляем карточку в DOM
+          closePopUp(popUpAddCard) // Закрываем попап
+          buttonSubmitformAddCard.textContent = 'Сохранить'
         })
     })
-  closePopUp(popUpAddCard) // Закрываем попап
+
   formAddCard.reset() // Сбрасываем поля формы
   clearValidation(formAddCard, validationConfig) // Отключаем сабмит
 }
@@ -127,6 +136,31 @@ const renderActualCards = (config) => {
       const cards = res[1]
       renderCards(cards, user)
     } // Если нет, то список карточек будет пустым, а вместо пользователя будет отображаться аноним
+  })
+}
+
+// Открыть редактор аватара
+const editAvatar = () => {
+  openPopUp(popUpAvatar)
+}
+
+// Засабмитить форму редактора аватара
+const submitFormEditAvatar = (evt) => {
+  evt.preventDefault() // Отменяем стандартную отправку формы.
+  buttonSubmitformEditAvatar.textContent = 'Сохранение...'
+  // Запрашиваем текущего пользователя
+  getUser(apiConfig).then(() => {
+    // Вынимаем ссылку на новую аватарку
+    const link = formEditAvatar.link.value
+
+    // Отправляем запрос на сервер
+    changeAvatar(apiConfig, link)
+      // Если удачно, отрисовывем изменения в DOM
+      .then(() => {
+        renderProfile(apiConfig)
+        closePopUp(popUpAvatar) // Закрываем попап
+        buttonSubmitformEditAvatar.textContent = 'Сохранить'
+      })
   })
 }
 
@@ -181,3 +215,9 @@ buttonOpenPopUpAddCard.addEventListener('click', () => openPopUp(popUpAddCard))
 
 // Ждет сабмит формы добавления новой карточки
 formAddCard.addEventListener('submit', submitFormAddCard)
+
+// Ждет клик по аватарке
+avatar.addEventListener('click', editAvatar)
+
+// Ждет сабмит формы редактирования аватарки
+formEditAvatar.addEventListener('submit', submitFormEditAvatar)

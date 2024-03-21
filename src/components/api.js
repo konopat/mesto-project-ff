@@ -148,3 +148,23 @@ const fetchServer = (config, request) => {
       })
   )
 }
+
+// Сменить аватар
+
+export const changeAvatar = (config, imageUrl) => {
+  const request = {
+    method: 'PATCH',
+    endPoint: '/users/me/avatar',
+    headers: {
+      authorization: config.token,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      avatar: imageUrl,
+    }),
+  }
+  return fetchServer(config, request).catch((err) => {
+    // Выводим ошибку в консоль
+    console.error('Ошибка отправки лайка на сервер', err)
+  })
+}

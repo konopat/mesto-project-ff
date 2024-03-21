@@ -2,6 +2,7 @@ import noimage from '../images/noimage.jpg' // Заглушка для не за
 import {
   deleteCardFromServer,
   dislikeCardOnServer,
+  getLikes,
   likeCardOnServer,
 } from './api'
 import { apiConfig } from './api.config'
@@ -57,7 +58,7 @@ export const createCard = (
 
   // Вешаем слушатель на кнопку "Лайк"
   buttonLike.addEventListener('click', () => {
-    likeCard(buttonLike, data._id, likeCounter, isLikedByCurrentUser)
+    likeCard(buttonLike, data._id, likeCounter)
   })
   // Вешаем слушатель на изображение
   image.addEventListener('click', () => {
@@ -76,17 +77,17 @@ export const deleteCard = (elementCard, idCard) => {
 }
 
 // Лайк карточки
-export const likeCard = (button, idCard, likeCounter, isLikedByCurrentUser) => {
+export const likeCard = (button, idCard, likeCounter) => {
   // Если карточка уже лайкнута текущим пользователем
-  if (isLikedByCurrentUser) {
+  if (button.classList.contains('card__like-button_is-active')) {
     dislikeCardOnServer(apiConfig, idCard).then((res) => {
-      button.classList.toggle('card__like-button_is-active') // Убираем лайк
       likeCounter.textContent = res.likes.length // Отрисовываем количество лайков
+      button.classList.toggle('card__like-button_is-active') // Убираем лайк
     })
   } else {
     likeCardOnServer(apiConfig, idCard).then((res) => {
-      button.classList.toggle('card__like-button_is-active') // Отрисовываем лайк на экране
       likeCounter.textContent = res.likes.length // Отрисовываем количество лайков
+      button.classList.toggle('card__like-button_is-active') // Отрисовываем лайк на экране
     })
   }
 }
