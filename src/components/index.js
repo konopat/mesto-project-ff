@@ -66,10 +66,10 @@ const submitFormEditProfile = (evt) => {
     .then((user) => {
       titleProfile.textContent = user.name
       descriptionProfile.textContent = user.about
+      closePopUp(popUpEditProfile) // Закрываем попап
     })
     .finally(() => {
       buttonSubmitFormEditProfile.textContent = 'Сохранить'
-      closePopUp(popUpEditProfile) // Закрываем попап
     })
     .catch((err) => {
       console.error(err)
@@ -99,12 +99,12 @@ const submitFormAddCard = (evt) => {
         card.owner
       )
       addCard(elementCard) // Добавляем карточку в DOM
-    })
-    .finally(() => {
-      buttonSubmitFormAddCard.textContent = 'Сохранить'
       formAddCard.reset() // Сбрасываем поля формы
       clearValidation(formAddCard, validationConfig) // Отключаем сабмит
       closePopUp(popUpAddCard) // Закрываем попап
+    })
+    .finally(() => {
+      buttonSubmitFormAddCard.textContent = 'Сохранить'
     })
     .catch((err) => {
       console.error(err)
@@ -168,12 +168,12 @@ const submitFormEditAvatar = (evt) => {
     // Если удачно, отрисовывем изменения в DOM
     .then((user) => {
       avatar.style.backgroundImage = 'url(' + user.avatar + ')'
-    })
-    .finally(() => {
-      buttonSubmitFormEditAvatar.textContent = 'Сохранить'
       closePopUp(popUpAvatar) // Закрываем попап
       formEditAvatar.reset() // Сбрасываем поля формы
       clearValidation(formEditAvatar, validationConfig) // Отключаем сабмит
+    })
+    .finally(() => {
+      buttonSubmitFormEditAvatar.textContent = 'Сохранить'
     })
     .catch((err) => {
       console.error(err)
